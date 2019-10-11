@@ -22,10 +22,11 @@ class RowSplitter(object):
     _line_continuation = '...'
     _setting_table = 'setting'
     _indented_tables = ('test case', 'keyword')
-    _split_from = ('ELSE', 'ELSE IF', 'AND')
+    #_split_from = ('ELSE', 'ELSE IF', 'AND')
+    _split_from = ()
 
-    def __init__(self, cols=8, split_multiline_doc=True):
-        self._cols = cols
+    def __init__(self, cols=80, split_multiline_doc=True):
+        self._cols = 9001
         self._split_multiline_doc = split_multiline_doc
 
     def split(self, row, table_type):

@@ -183,6 +183,8 @@ class _TestCaseUserKeywordPopulator(Populator):
         self._test_or_uk = None
         self._populator = NullPopulator()
         self._comment_cache = CommentCache()
+        # added by jdy; support continues(...) at test step
+        self.ellipsis_trick_on = False
 
     def add(self, row):
         if row.is_commented():
@@ -201,8 +203,17 @@ class _TestCaseUserKeywordPopulator(Populator):
             if row.all == ['END']:
                 ending_for_loop = self._end_for_loop()
             self._populator = self._get_populator(row)
+            # added by jdy; support continues(...) at test step
+            if isinstance(self._populator, StepPopulator) or isinstance(self._populator, ForLoopPopulator):
+                self.ellipsis_trick_on = True
+            else:
+                self.ellipsis_trick_on = False
             self._comment_cache.consume_with(self._populate_comment_row)
         else:
+            # added by jdy; support continues(...) at test step
+            if self.ellipsis_trick_on:
+                self._populator.populate()
+                self._populator = self._get_populator(row)
             self._comment_cache.consume_with(self._populator.add)
         if not ending_for_loop:
             self._populator.add(row)
@@ -340,7 +351,10 @@ class MetadataPopulator(DocumentationPopulator):
 class StepPopulator(_PropertyPopulator):
 
     def _add(self, row):
-        self._value.extend(row.data)
+        if row.is_continuing():
+            self._value += row.cells
+        else:
+            self._value.extend(row.data)
 
     def populate(self):
         if self._value or self._comments:
